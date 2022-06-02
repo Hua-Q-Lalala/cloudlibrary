@@ -1,5 +1,6 @@
 package com.itheima.config;
 
+import org.apache.ibatis.plugin.Interceptor;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,11 @@ public class MyBatisConfig {
     }  
     @Bean
     public SqlSessionFactoryBean getSqlSessionFactoryBean(
-            @Autowired DataSource dataSource) {
+            @Autowired DataSource dataSource, @Autowired PageInterceptor pageIntercptor) {
         SqlSessionFactoryBean ssfb = new SqlSessionFactoryBean();
         //等同于<property name="dataSource" ref="dataSource"/>
         ssfb.setDataSource(dataSource);
+        ssfb.setPlugins(new Interceptor[]{pageIntercptor});
         return ssfb;
     }
 
