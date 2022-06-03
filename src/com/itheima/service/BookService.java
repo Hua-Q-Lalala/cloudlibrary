@@ -18,4 +18,13 @@ public interface BookService {
 	
 	//借阅图书
 	Integer borrowBook(Book book);
+	
+	//分页查询图书
+	PageResult search(Book book, Integer pageNum, Integer pageSize);
+	
+	//新增图书
+	Integer addBook(Book book);
+	
+	//编辑图书信息
+	Integer editBook(Book book);
 }

@@ -66,4 +66,32 @@ public class BookServiceImpl implements BookService{
 		
 	}
 
+	/**
+	 * 分页查询图书
+	 */
+	@Override
+	public PageResult search(Book book, Integer pageNum, Integer pageSize) {
+		//设置分页查询的参数，开始分页
+		PageHelper.startPage(pageNum, pageSize);
+		Page<Book> page = bookMapper.searchBooks(book);
+		System.out.println(page);
+		return new PageResult(page.getTotal(), page.getResult());
+	}
+
+	/**
+	 * 新增图书
+	 */
+	@Override
+	public Integer addBook(Book book) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		//设置新增图书的上架时间
+		book.setUploadTime(dateFormat.format(new Date()));
+		return bookMapper.addBook(book);
+	}
+
+	@Override
+	public Integer editBook(Book book) {
+		return bookMapper.editBook(book);
+	}
+
 }

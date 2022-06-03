@@ -1,5 +1,6 @@
 package com.itheima.controller;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +74,79 @@ public class BookController {
 		}catch(Exception e) {
 			e.printStackTrace();
 			return new Result(false, "借阅图书失败!");
+		}
+	}
+	
+	/**
+	 * 分页查询符合条件且未下架图书信息
+	 * @param book
+	 * @param pageNum
+	 * @param pageSize
+	 * @param reqeust
+	 * @return
+	 */
+	@RequestMapping("/search")
+	public ModelAndView search(Book book, Integer pageNum, Integer pageSize, 
+			HttpServletRequest reqeust){
+		if(pageNum == null){
+			pageNum = 1;
+		}
+		if(pageSize == null){
+			pageSize = 10;
+		}
+		System.out.println(book);
+		//查询到的图书信息
+		PageResult pageResult = bookService.search(book, pageNum, pageSize);
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("books");
+		//将查询到的数据存放在ModelAndView对象中
+		modelAndView.addObject("pageResult", pageResult);
+		//将查询的参数返回到页面，用于回显到查询的输入框中
+		modelAndView.addObject("search", book);
+		//将当前页码返回到页面，用于分页插件的分页显示
+		modelAndView.addObject("pageNum", pageNum);
+		//将当前查询的控制器路径返回到页面，页码变化时继续向该路径发送请求
+		modelAndView.addObject("gourl", reqeust.getRequestURI());
+		return modelAndView;
+	}
+	
+	/**
+	 * 新增图书
+	 * @param book
+	 * @return
+	 */
+	@RequestMapping("/addBook")
+	@ResponseBody
+	public Result addBook(Book book) {
+		try {
+			Integer count = bookService.addBook(book);
+			if(count != 1) {
+				return new Result(false, "新增图书失败！");
+			}
+			return new Result(true, "新增图书成功！");
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new Result(false, "新增图书失败！");
+		}
+	}
+	
+	/**
+	 * 编辑图书
+	 * @param book
+	 * @return
+	 */
+	@RequestMapping("/editBook")
+	@ResponseBody
+	public Result editBook(Book book) {
+		try {
+			Integer count = bookService.editBook(book);
+			if(count != 1) {
+				return new Result(false, "编辑失败！"); 
+			}
+			return new Result(true, "编辑成功！"); 
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new Result(false, "编辑失败！"); 
 		}
 	}
 }
