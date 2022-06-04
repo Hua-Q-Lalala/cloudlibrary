@@ -11,9 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.itheima.domain.Book;
+import com.itheima.domain.Record;
 import com.itheima.domain.User;
 import com.itheima.mapper.BookMapper;
 import com.itheima.service.BookService;
+import com.itheima.service.RecordService;
 
 import entity.PageResult;
 
@@ -24,6 +26,10 @@ public class BookServiceImpl implements BookService{
 	//注入BookMapper对象
 	@Autowired
 	private BookMapper bookMapper;
+	
+	//注入RecordService对象
+	@Autowired
+	private RecordService recordService;
 	
 	/**
 	 * 根据当前页码和每页需要显示的数据条数，查询最新上架的图书信息
@@ -137,6 +143,10 @@ public class BookServiceImpl implements BookService{
 	public Integer returnConfirm(String id) {
 		//根据图书id查询图书的完整信息
 		Book book = bookMapper.findById(id);
+		
+		//根据归还确认的图书信息，设置借阅记录
+		Record record = this.setRecord(book);
+		
 		//将图书的借阅状态修改为可借阅
 		book.setStatus("0");
 		//清除当前图书的借阅人信息
@@ -145,8 +155,29 @@ public class BookServiceImpl implements BookService{
 		book.setBorrowTime("");
 		//清除当前图书的预计归还时间信息
 		book.setReturnTime("");
-		return bookMapper.editBook(book);
+		
+		Integer count = bookMapper.editBook(book);
+		//如果归还确认成功，则新增借阅记录
+		if(count == 1) {
+			return recordService.addRecord(record);
+		}
+		return 0;
 		
 	}
 
+	private Record setRecord(Book book) {
+		Record record = new Record();
+		//设置借阅记录的图书名称
+		record.setBookname(book.getName());
+		//设置借阅记录的图书ISBN
+		record.setBookisbn(book.getIsbn());
+		//设置借阅记录的借阅人
+		record.setBorrower(book.getBorrower());
+		//设置借阅记录的借阅时间
+		record.setBorrowTime(book.getBorrowTime());
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		//设置图书归还确认的当天为归还时间
+		record.setRemandTime(dateFormat.format(new Date()));
+		return record;
+	}
 }

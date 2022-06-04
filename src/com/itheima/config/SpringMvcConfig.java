@@ -1,8 +1,6 @@
 package com.itheima.config;
 
-
-
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -18,12 +16,25 @@ import com.itheima.interceptor.ResourcesInterceptor;
 import java.util.List;
 
 @Configuration
+@PropertySource("classpath:ignoreUrl.properties")
 //等同于<context:component-scan base-package="com.itheima.controller"/>
 @ComponentScan({"com.itheima.controller"})
 //等同于<mvc:annotation-driven/>，但不完全相同
 @EnableWebMvc
 public class SpringMvcConfig  implements WebMvcConfigurer {
 
+	@Value("#{'${igonreUrl}'.split(',')}")
+	private List<String> igonreUrl;
+	
+	@Value("${igonreUrl}")
+	private String s;
+	
+	@Bean
+	public ResourcesInterceptor resourceInterceptor() {
+		System.out.println(s);
+		return new ResourcesInterceptor(igonreUrl);
+	}
+	
     /*
      *开启对静态资源的访问
      * 类似在Spring MVC的配置文件中设置<mvc:default-servlet-handler/>元素
@@ -63,7 +74,7 @@ public class SpringMvcConfig  implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor( new ResourcesInterceptor()).addPathPatterns("/**").excludePathPatterns("/css/**","/js/**","/img/**");
+        registry.addInterceptor(resourceInterceptor()).addPathPatterns("/**").excludePathPatterns("/css/**","/js/**","/img/**");
     }
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry arg0) {

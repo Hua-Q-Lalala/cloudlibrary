@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mapper.RecordMapper">
+	
+	<resultMap type="com.itheima.domain.Record" id="recordMap">
+		<id column="record_id" property="id"/>
+		<result column="record_bookname" property="bookname"/>
+		<result column="record_bookisbn" property="bookisbn"/>
+		<result column="record_borrower" property="borrower"/>
+		<result column="record_borrowtime" property="borrowTime"/>
+		<result column="record_remandtime" property="remandTime"/>
+	</resultMap>
+
+
+	<insert id="addRecord">
+		insert into record(
+			record_id, record_bookname, record_bookisbn, record_borrower, 
+			record_borrowtime, record_remandtime
+		)
+		values(
+			#{id}, #{bookname}, #{bookisbn}, #{borrower}, #{borrowTime}, #{remandTime}
+		)
+	</insert>
+	
+	<select id="searchRecords" resultMap="recordMap">
+		SELECT * FROM record
+		where 1 = 1
+		<if test="borrower!=null">
+			AND record_borrower like concat('%', #{borrower} ,'%')
+		</if>
+		<if test="bookname!=null">
+			AND record_bookname like concat('%', #{bookname} ,'%')
+		</if>
+		order by record_remandtime DESC
+	</select>
+
+</mapper>
