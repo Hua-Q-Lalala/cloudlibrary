@@ -3,6 +3,7 @@ package com.itheima.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -147,6 +148,72 @@ public class BookController {
 		}catch(Exception e) {
 			e.printStackTrace();
 			return new Result(false, "编辑失败！"); 
+		}
+	}
+	
+	@RequestMapping("/searchBorrowed")
+	public ModelAndView searchBorrowed(Book book, Integer pageNum,
+			Integer pageSize, HttpServletRequest request) {
+		if(pageNum == null) {
+			pageNum = 1;
+		}
+		if(pageSize == null) {
+			pageSize = 10;
+		}
+		
+		//获取当前登录的用户
+		User user = (User) request.getSession().getAttribute("USER_SESSION");
+		PageResult pageResult = bookService.searchBorrowed(book, user, pageNum, pageSize);
+		ModelAndView modelAndView = new ModelAndView();
+		modelAndView.setViewName("book_borrowed");
+		//将查询到的数据存放在ModelAndView的对象中
+		modelAndView.addObject("pageResult", pageResult);
+		//将查询的参数返回到页面，用于回显到查询的输入框中
+		modelAndView.addObject("search", book);
+		//将当前页码返回到页面，用于分页插件的分页显示
+		modelAndView.addObject("pageNum", pageNum);
+		//将当前查询的控制器路径返回到页面，页码变化时继续向该路径发送请求
+		modelAndView.addObject("gourl", request.getRequestURI());
+		return modelAndView;
+	}
+	
+	/**
+	 * 归还图书
+	 */
+	@RequestMapping("/returnBook")
+	@ResponseBody
+	public Result returnBook(String id, HttpSession session) {
+		//获取当前登录的用户信息
+		User user = (User) session.getAttribute("USER_SESSION");
+		try {
+			boolean flag = bookService.returnBook(id, user);
+			if(!flag) {
+				return new Result(false, "还书失败！");
+			}
+			return new Result(true, "还书成功！");
+		}catch(Exception e) {
+			e.printStackTrace();
+			return new Result(false, "还书失败！");
+		}
+	}
+	
+	/**
+	 * 图书归还确认
+	 * @param id
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/returnConfirm")
+	public Result returnConfirm(String id) {
+		try {
+			Integer count = bookService.returnConfirm(id);
+			if(count != 1) {
+				return new Result(false, "确认失败！");
+			}
+			return new Result(true, "确认成功！");
+		}catch(Exception e){
+			e.printStackTrace();
+			return new Result(false, "确认失败！");
 		}
 	}
 }

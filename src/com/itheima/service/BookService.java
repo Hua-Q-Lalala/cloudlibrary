@@ -1,6 +1,7 @@
 package com.itheima.service;
 
 import com.itheima.domain.Book;
+import com.itheima.domain.User;
 
 import entity.PageResult;
 
@@ -27,4 +28,13 @@ public interface BookService {
 	
 	//编辑图书信息
 	Integer editBook(Book book);
+	
+	//查询当前借阅的图书
+	PageResult searchBorrowed(Book book, User user, Integer pageNum, Integer pageSize);
+	
+	//归还图书
+	boolean returnBook(String id, User user);
+	
+	//归还确认
+	Integer returnConfirm(String id);
 }

@@ -35,11 +35,11 @@ public class UserController {
 				return "redirect:/admin/main.jsp";
 			}
 			request.setAttribute("msg", "用户名或密码错误");
-			return "login";
+			return "forward:/admin/login.jsp";
 		} catch (Exception e) {
 			e.printStackTrace();
 			request.setAttribute("msg", "系统错误");
-			return "login";
+			return "forward:/admin/login.jsp";
 		}
 	}
 

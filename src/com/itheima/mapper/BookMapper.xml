@@ -3,7 +3,22 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.itheima.mapper.BookMapper">
-
+	
+	<resultMap type="com.itheima.domain.Book" id="bookMap">
+		<id column="book_id" property="id"/>
+		<result column="book_name" property = "name" />
+		<result column="book_isbn" property = "isbn" />
+		<result column="book_press" property = "press" />
+		<result column="book_author" property = "author" />
+		<result column="book_pagination" property = "pagination" />
+		<result column="book_price" property = "price" />
+		<result column="book_uploadTime" property = "uploadTime" />
+		<result column="book_status" property = "status" />
+		<result column="book_borrower" property = "borrower" />
+		<result column="book_borrowTime" property = "borrowTime" />
+		<result column="book_returnTime" property = "returnTime" />
+	</resultMap>
+	
 	<!-- 修改图书信息 -->
 	<update id="editBook">
 		update book
@@ -57,4 +72,48 @@
 			#{borrowTime}, #{returnTime}
 		)
 	</insert>
+	
+	<select id="selectBorrowed" resultMap="bookMap">
+		SELECT * FROM book 
+		where (book_borrower = #{borrower}
+		AND book_status = '1'
+		<if test="name != null">
+			AND book_name like CONCAT('%', #{name}, '%')
+		</if>
+		<if test="press != null">
+			AND book_press like CONCAT('%', #{press}, '%')
+		</if>
+		<if test="author != null">
+			AND book_author like CONCAT('%', #{author}, '%')
+		</if>
+		) OR (book_status = '2'
+		<if test="name != null">
+			AND book_name like CONCAT('%', #{name}, '%')
+		</if>
+		<if test="press != null">
+			AND book_press like CONCAT('%', #{press}, '%')
+		</if>
+		<if test="author != null">
+			AND book_author like CONCAT('%', #{author}, '%')
+		</if>
+		) order by book_borrowtime
+	</select>
+	
+	<select id="selectMyBorrowed" resultMap="bookMap">
+		SELECT * FROM book 
+		where book_borrower = #{borrower}
+		AND book_status in('1', '2')
+		<if test="name != null">
+			AND book_name like CONCAT('%', #{name}, '%')
+		</if>
+		<if test="press != null">
+			AND book_press like CONCAT('%', #{press}, '%')
+		</if>
+		<if test="author != null">
+			AND book_author like CONCAT('%', #{author}, '%')
+		</if>
+		order by book_borrowtime
+	</select>
+	
+	
 </mapper>

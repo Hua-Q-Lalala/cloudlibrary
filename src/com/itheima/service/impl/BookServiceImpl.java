@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.itheima.domain.Book;
+import com.itheima.domain.User;
 import com.itheima.mapper.BookMapper;
 import com.itheima.service.BookService;
 
@@ -92,6 +93,60 @@ public class BookServiceImpl implements BookService{
 	@Override
 	public Integer editBook(Book book) {
 		return bookMapper.editBook(book);
+	}
+
+	/**
+	 * 查询用户当前借阅的图书
+	 */
+	@Override
+	public PageResult searchBorrowed(Book book, User user, Integer pageNum, Integer pageSize) {
+		//设置分页查询的参数，开始分页
+		PageHelper.startPage(pageNum, pageSize);
+		Page<Book> page;
+		//将当前登录的用户放入查询条件中
+		book.setBorrower(user.getName());
+		//如果时管理员，查询当前用户借阅但未归还的图书和所有待确认归还的图书
+		if("ADMIN".equals(user.getRole())) {
+			page = bookMapper.selectBorrowed(book);
+		}else {
+			page = bookMapper.selectMyBorrowed(book);
+		}
+		
+		return new PageResult(page.getTotal(), page.getResult());
+	}
+
+	@Override
+	public boolean returnBook(String id, User user) {
+		//根据图书id查询图书的完整信息
+		Book book = this.findById(id);
+		//再次核验当前登录人员和图书借阅人是不是同一个人
+		boolean rb = book.getBorrower().equals(user.getName());
+		//如果是同一个人，允许归还
+		if(rb) {
+			//将图书借阅状态修改为归还中
+			book.setStatus("2");
+			bookMapper.editBook(book);
+		}
+		return rb;
+	}
+
+	/**
+	 * 归还确认
+	 */
+	@Override
+	public Integer returnConfirm(String id) {
+		//根据图书id查询图书的完整信息
+		Book book = bookMapper.findById(id);
+		//将图书的借阅状态修改为可借阅
+		book.setStatus("0");
+		//清除当前图书的借阅人信息
+		book.setBorrower("");
+		//清除当前图书的借阅时间信息
+		book.setBorrowTime("");
+		//清除当前图书的预计归还时间信息
+		book.setReturnTime("");
+		return bookMapper.editBook(book);
+		
 	}
 
 }
